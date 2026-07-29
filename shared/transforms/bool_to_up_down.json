@@ -1,0 +1,5 @@
+{
+  "name": "bool_to_up_down",
+  "description": "Map a boolean enabled/up flag to the string \"up\" or \"down\".",
+  "code": "return \"up\" if value else \"down\""
+}

@@ -1,0 +1,165 @@
+{
+  "name": "interface-state",
+  "description": "Interface state and traffic counters \u2014 multivendor",
+  "version": "1.0.0",
+  "fields": [
+    {
+      "name": "interface-name",
+      "field-type": "string",
+      "required": true,
+      "description": "Interface name (key)",
+      "position": 0
+    },
+    {
+      "name": "admin-status",
+      "field-type": "string",
+      "required": false,
+      "description": "Admin status (up/down)",
+      "position": 1
+    },
+    {
+      "name": "oper-status",
+      "field-type": "string",
+      "required": false,
+      "description": "Operational status",
+      "position": 2
+    },
+    {
+      "name": "mtu",
+      "field-type": "uint32",
+      "required": false,
+      "description": "MTU in bytes",
+      "position": 3
+    },
+    {
+      "name": "in-octets",
+      "field-type": "uint64",
+      "required": false,
+      "description": "Ingress byte counter",
+      "position": 4
+    },
+    {
+      "name": "out-octets",
+      "field-type": "uint64",
+      "required": false,
+      "description": "Egress byte counter",
+      "position": 5
+    },
+    {
+      "name": "in-errors",
+      "field-type": "uint64",
+      "required": false,
+      "description": "Ingress error counter",
+      "position": 6
+    },
+    {
+      "name": "out-errors",
+      "field-type": "uint64",
+      "required": false,
+      "description": "Egress error counter",
+      "position": 7
+    }
+  ],
+  "mappings": [
+    {
+      "protocol": "gnmi",
+      "netos": "eos",
+      "key-field": "name",
+      "gnmi-paths": [
+        "/interfaces/interface/state"
+      ],
+      "field-mappings": {
+        "admin-status": "admin-status",
+        "in-errors": "in-errors",
+        "in-octets": "in-octets",
+        "mtu": "mtu",
+        "name": "interface-name",
+        "oper-status": "oper-status",
+        "out-errors": "out-errors",
+        "out-octets": "out-octets"
+      },
+      "field-transforms": {
+        "admin-status": [
+          "lowercase"
+        ],
+        "oper-status": [
+          "lowercase"
+        ]
+      },
+      "value-transforms": {
+        "oper-status": {
+          "DOWN": "down",
+          "UP": "up"
+        }
+      }
+    },
+    {
+      "protocol": "gnmi",
+      "netos": "srlinux",
+      "key-field": "name",
+      "gnmi-paths": [
+        "/srl_nokia-interfaces:interface/admin-state",
+        "/srl_nokia-interfaces:interface/oper-state",
+        "/srl_nokia-interfaces:interface/mtu",
+        "/srl_nokia-interfaces:interface/statistics/in-octets",
+        "/srl_nokia-interfaces:interface/statistics/out-octets",
+        "/srl_nokia-interfaces:interface/statistics/in-error-packets",
+        "/srl_nokia-interfaces:interface/statistics/out-error-packets"
+      ],
+      "field-mappings": {
+        "admin-state": "admin-status",
+        "in-error-packets": "in-errors",
+        "in-octets": "in-octets",
+        "mtu": "mtu",
+        "name": "interface-name",
+        "oper-state": "oper-status",
+        "out-error-packets": "out-errors",
+        "out-octets": "out-octets"
+      },
+      "value-transforms": {
+        "admin-status": {
+          "disable": "down",
+          "enable": "up"
+        },
+        "oper-status": {
+          "down": "down",
+          "up": "up"
+        }
+      }
+    },
+    {
+      "protocol": "gnmi",
+      "netos": "ios-xr",
+      "key-field": "name",
+      "gnmi-paths": [
+        "openconfig-interfaces:interfaces/interface/state"
+      ],
+      "gnmi-path-filter": "/state",
+      "field-mappings": {
+        "admin-status": "admin-status",
+        "counters.in-errors": "in-errors",
+        "counters.in-octets": "in-octets",
+        "counters.out-errors": "out-errors",
+        "counters.out-octets": "out-octets",
+        "mtu": "mtu",
+        "name": "interface-name",
+        "oper-status": "oper-status"
+      },
+      "value-transforms": {
+        "admin-status": {
+          "DOWN": "down",
+          "UP": "up"
+        },
+        "oper-status": {
+          "DOWN": "down",
+          "UP": "up"
+        }
+      },
+      "ignore-values": {
+        "interface-name": [
+          "Null0"
+        ]
+      }
+    }
+  ]
+}

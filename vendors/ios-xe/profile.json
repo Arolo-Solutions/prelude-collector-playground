@@ -1,0 +1,71 @@
+{
+  "schema-version": 1,
+  "netos": "ios-xe",
+  "display-name": "Cisco IOS-XE",
+  "vendor": "cisco",
+  "detection": {
+    "gnmi-capability-modules": [
+      "Cisco-IOS-XE"
+    ],
+    "snmp-sysdescr-patterns": [
+      "IOS-XE",
+      "IOS XE"
+    ],
+    "cli-show-version-patterns": [
+      "IOS-XE",
+      "IOS XE"
+    ]
+  },
+  "gnmi": {
+    "path-format": "module-prefix",
+    "default-encoding": "json_ietf",
+    "default-origin": "rfc7951",
+    "notification-style": "standard"
+  },
+  "netconf": {
+    "default-port": 830
+  },
+  "snmp": {
+    "profile-tags": [
+      "cisco-iosxe"
+    ],
+    "version-regex": "Cisco IOS Software.*Version\\s+(\\S+?)[,\\s]"
+  },
+  "cli": {
+    "prompt-hints": [
+      "#",
+      ">"
+    ],
+    "paging-disable": "terminal length 0",
+    "prompt-patterns": [
+      "[\\r\\n]*[\\w+\\-\\.:\\/\\[\\]\\~]+(?:\\([^\\)]+\\)){0,1}(?:>|#|\\$) ?$"
+    ],
+    "error-patterns": [
+      "% ?Invalid",
+      "% ?Incomplete",
+      "% ?Ambiguous",
+      "% ?Authorization failed",
+      "% ?Error",
+      "% ?Bad secret",
+      "Syntax error",
+      "[^\\r\\n]+ not found"
+    ],
+    "clean-shell": [
+      "terminal length 0",
+      "terminal width 512",
+      "terminal no monitor"
+    ]
+  },
+  "yang": {
+    "embedded-subpath": "vendor/cisco/xe",
+    "repo-slugs": [
+      "openconfig"
+    ]
+  },
+  "playground": {
+    "url": "https://github.com/Arolo-Solutions/prelude-collector-playground/tree/main/vendors/ios-xe",
+    "examples": [
+      "profile.json"
+    ]
+  }
+}

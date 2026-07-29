@@ -1,0 +1,5 @@
+{
+  "name": "dbm_from_tenths",
+  "description": "Convert an optical power reading in tenths-of-dBm (common SNMP encoding) to dBm with 1-decimal precision.",
+  "code": "return round(value / 10.0, 1)"
+}

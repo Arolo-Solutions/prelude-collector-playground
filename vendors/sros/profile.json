@@ -1,0 +1,72 @@
+{
+  "schema-version": 1,
+  "netos": "sros",
+  "display-name": "Nokia SR OS",
+  "vendor": "nokia",
+  "detection": {
+    "gnmi-capability-modules": [
+      "nokia-conf",
+      "nokia-state"
+    ],
+    "snmp-sysdescr-patterns": [
+      "TiMOS",
+      "Nokia"
+    ],
+    "cli-show-version-patterns": [
+      "TiMOS"
+    ]
+  },
+  "gnmi": {
+    "path-format": "bare-slash",
+    "default-encoding": "json_ietf",
+    "default-origin": "",
+    "notification-style": "standard"
+  },
+  "netconf": {
+    "default-port": 830
+  },
+  "snmp": {
+    "profile-tags": [
+      "nokia-sros"
+    ],
+    "version-regex": "TiMOS-\\S+-(\\S+)\\s"
+  },
+  "cli": {
+    "prompt-hints": [
+      "#",
+      ">"
+    ],
+    "paging-disable": "environment no more",
+    "prompt-patterns": [
+      "[\\r\\n]+[*!]?[AB]:[\\w\\-\\.:/\\[\\]\\~@]+(?:\\([^\\)]+\\)){0,1}[#>\\$] ?$",
+      "^[*!]?[AB]:[\\w\\-\\.:/\\[\\]\\~@]+[#>\\$] ?$"
+    ],
+    "error-patterns": [
+      "MINOR: ",
+      "MAJOR: ",
+      "CRITICAL: ",
+      "ERROR: ",
+      "Error: ",
+      "invalid token",
+      "[Ii]nvalid parameter",
+      "[^\\r\\n]+ not found",
+      "Access denied"
+    ],
+    "clean-shell": [
+      "environment no more",
+      "environment more false"
+    ]
+  },
+  "yang": {
+    "embedded-subpath": "",
+    "repo-slugs": [
+      "sros"
+    ]
+  },
+  "playground": {
+    "url": "https://github.com/Arolo-Solutions/prelude-collector-playground/tree/main/vendors/sros",
+    "examples": [
+      "profile.json"
+    ]
+  }
+}

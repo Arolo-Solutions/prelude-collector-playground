@@ -1,0 +1,76 @@
+{
+  "name": "oc-isis-adjacency",
+  "description": "OpenConfig IS-IS adjacency state",
+  "version": "1.0.0",
+  "fields": [
+    {
+      "name": "system-id",
+      "field-type": "string",
+      "required": true,
+      "description": "Neighbor system ID (key)",
+      "position": 0
+    },
+    {
+      "name": "adjacency-state",
+      "field-type": "string",
+      "required": false,
+      "description": "Adjacency state",
+      "position": 1
+    },
+    {
+      "name": "neighbor-snpa",
+      "field-type": "string",
+      "format": "mac-address",
+      "required": false,
+      "description": "Neighbor SNPA (MAC address)",
+      "position": 2
+    },
+    {
+      "name": "area-address",
+      "field-type": "string",
+      "required": false,
+      "description": "Area address",
+      "position": 3
+    },
+    {
+      "name": "adjacency-type",
+      "field-type": "string",
+      "required": false,
+      "description": "Adjacency type (L1/L2)",
+      "position": 4
+    },
+    {
+      "name": "local-extended-circuit-id",
+      "field-type": "integer",
+      "required": false,
+      "description": "Local extended circuit ID",
+      "position": 5
+    }
+  ],
+  "mappings": [
+    {
+      "protocol": "gnmi",
+      "netos": "ios-xr",
+      "key-field": "state.system-id",
+      "gnmi-paths": [
+        "openconfig-network-instance:network-instances/network-instance/protocols/protocol/isis/interfaces/interface/levels/level/adjacencies/adjacency/state"
+      ],
+      "field-mappings": {
+        "adjacency-state": "adjacency-state",
+        "adjacency-type": "adjacency-type",
+        "area-address": "area-address",
+        "local-extended-circuit-id": "local-extended-circuit-id",
+        "neighbor-snpa": "neighbor-snpa",
+        "system-id": "system-id"
+      },
+      "value-transforms": {
+        "adjacency-state": {
+          "DOWN": "down",
+          "FAILED": "failed",
+          "INIT": "init",
+          "UP": "up"
+        }
+      }
+    }
+  ]
+}

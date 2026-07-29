@@ -1,0 +1,67 @@
+{
+  "schema-version": 1,
+  "netos": "srlinux",
+  "display-name": "Nokia SR Linux",
+  "vendor": "nokia",
+  "detection": {
+    "gnmi-capability-modules": [
+      "srl_nokia"
+    ],
+    "snmp-sysdescr-patterns": [
+      "SR Linux"
+    ],
+    "cli-show-version-patterns": [
+      "SR Linux"
+    ]
+  },
+  "gnmi": {
+    "path-format": "module-prefix",
+    "default-encoding": "json_ietf",
+    "default-origin": "",
+    "notification-style": "standard"
+  },
+  "netconf": {
+    "default-port": 830
+  },
+  "snmp": {
+    "profile-tags": [
+      "nokia-srlinux"
+    ],
+    "version-regex": ""
+  },
+  "cli": {
+    "prompt-hints": [
+      "#",
+      ">"
+    ],
+    "paging-disable": "",
+    "prompt-patterns": [
+      "[\\r\\n][\\w+\\-\\.:/\\[\\]\\~@]+(?:\\([^\\)]+\\)){0,1}(?:>|#|\\$) ?$"
+    ],
+    "error-patterns": [
+      "Parsing error:",
+      "Error: ",
+      "Unknown command",
+      "Unknown token",
+      "\\[FailedPrecondition\\]",
+      "Failed to commit",
+      "Invalid input"
+    ],
+    "clean-shell": [
+      "environment cli-engine type basic",
+      "environment complete-on-space false"
+    ]
+  },
+  "yang": {
+    "embedded-subpath": "",
+    "repo-slugs": [
+      "openconfig"
+    ]
+  },
+  "playground": {
+    "url": "https://github.com/Arolo-Solutions/prelude-collector-playground/tree/main/vendors/srlinux",
+    "examples": [
+      "profile.json"
+    ]
+  }
+}

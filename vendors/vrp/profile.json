@@ -1,0 +1,80 @@
+{
+  "schema-version": 1,
+  "netos": "vrp",
+  "display-name": "Huawei VRP",
+  "vendor": "huawei",
+  "detection": {
+    "gnmi-capability-modules": [
+      "huawei"
+    ],
+    "snmp-sysdescr-patterns": [
+      "Huawei Versatile Routing Platform",
+      "VRP (R)"
+    ],
+    "cli-show-version-patterns": [
+      "Huawei Versatile Routing Platform",
+      "VRP (R)"
+    ]
+  },
+  "gnmi": {
+    "path-format": "module-prefix",
+    "default-encoding": "json",
+    "default-origin": "",
+    "notification-style": "standard"
+  },
+  "netconf": {
+    "default-port": 830
+  },
+  "snmp": {
+    "profile-tags": [
+      "huawei-vrp"
+    ],
+    "version-regex": "VRP \\(R\\) [Ss]oftware, Version\\s+(\\S+)"
+  },
+  "cli": {
+    "prompt-hints": [
+      "<",
+      ">",
+      "[",
+      "]"
+    ],
+    "paging-disable": "screen-length 0 temporary",
+    "prompt-patterns": [
+      "[\\r\\n]+[<\\[][^>\\]\\r\\n]+[>\\]]\\s*$"
+    ],
+    "error-patterns": [
+      "Error: Unrecognized command",
+      "Error: Wrong parameter",
+      "Error: Incomplete command",
+      "Error: Too many parameters",
+      "Error: Ambiguous command"
+    ],
+    "clean-shell": [
+      "screen-length 0 temporary"
+    ],
+    "blocked-prefixes": [
+      "system-view",
+      "reset",
+      "reboot",
+      "save"
+    ],
+    "auto-responses": [
+      {
+        "pattern": "Change now\\? \\[Y/N\\]:?",
+        "response": "N"
+      }
+    ]
+  },
+  "yang": {
+    "embedded-subpath": "",
+    "repo-slugs": [
+      "openconfig"
+    ]
+  },
+  "playground": {
+    "url": "https://github.com/Arolo-Solutions/prelude-collector-playground/tree/main/vendors/vrp",
+    "examples": [
+      "profile.json"
+    ]
+  }
+}

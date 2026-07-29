@@ -1,0 +1,71 @@
+{
+  "schema-version": 1,
+  "netos": "eos",
+  "display-name": "Arista EOS",
+  "vendor": "arista",
+  "detection": {
+    "gnmi-capability-modules": [
+      "arista"
+    ],
+    "snmp-sysdescr-patterns": [
+      "Arista",
+      "EOS"
+    ],
+    "cli-show-version-patterns": [
+      "Arista",
+      "EOS"
+    ]
+  },
+  "gnmi": {
+    "path-format": "bare-slash",
+    "default-encoding": "json",
+    "default-origin": "",
+    "notification-style": "split-prefix"
+  },
+  "netconf": {
+    "default-port": 830
+  },
+  "snmp": {
+    "profile-tags": [
+      "arista-eos"
+    ],
+    "version-regex": "Arista Networks EOS version\\s+(\\S+)"
+  },
+  "cli": {
+    "prompt-hints": [
+      "#",
+      ">"
+    ],
+    "paging-disable": "terminal length 0",
+    "prompt-patterns": [
+      "[\\r\\n]*[\\w+\\-\\.:\\/\\[\\]\\~]+(?:\\([^\\)]+\\)){0,1}(?:>|#|\\$) ?$"
+    ],
+    "error-patterns": [
+      "% ?Invalid input",
+      "% ?Incomplete command",
+      "% ?Ambiguous command",
+      "% ?Authorization failed",
+      "% ?Unable to",
+      "% ?Error",
+      "[^\\r\\n]+ not found"
+    ],
+    "clean-shell": [
+      "terminal length 0",
+      "terminal width 32767",
+      "no terminal monitor"
+    ]
+  },
+  "yang": {
+    "embedded-subpath": "",
+    "repo-slugs": [
+      "arista",
+      "openconfig"
+    ]
+  },
+  "playground": {
+    "url": "https://github.com/Arolo-Solutions/prelude-collector-playground/tree/main/vendors/eos",
+    "examples": [
+      "profile.json"
+    ]
+  }
+}

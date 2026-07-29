@@ -1,0 +1,73 @@
+{
+  "name": "cli-xr-interface-summary",
+  "description": "Cisco IOS-XR interface IP/status summary parsed from 'show ipv4 interface brief' with a GoTTP template.",
+  "version": "1.0.0",
+  "fields": [
+    {
+      "name": "interface-name",
+      "field-type": "string",
+      "required": true,
+      "description": "Interface name (key)",
+      "position": 0
+    },
+    {
+      "name": "ip-address",
+      "field-type": "string",
+      "required": false,
+      "description": "Configured IPv4 address, or 'unassigned'",
+      "position": 1
+    },
+    {
+      "name": "status",
+      "field-type": "string",
+      "required": false,
+      "description": "Line/admin status (up/down/shutdown)",
+      "position": 2
+    },
+    {
+      "name": "protocol",
+      "field-type": "string",
+      "required": false,
+      "description": "Protocol status (up/down)",
+      "position": 3
+    },
+    {
+      "name": "vrf-name",
+      "field-type": "string",
+      "required": false,
+      "description": "VRF the interface belongs to",
+      "position": 4
+    }
+  ],
+  "mappings": [
+    {
+      "protocol": "cli",
+      "netos": "ios-xr",
+      "key-field": "interface",
+      "cli-commands": [
+        "show ipv4 interface brief"
+      ],
+      "cli-template": "{{ interface }} {{ ip_address }} {{ status }} {{ protocol }} {{ vrf_name }}\n",
+      "field-mappings": {
+        "interface": "interface-name",
+        "ip_address": "ip-address",
+        "protocol": "protocol",
+        "status": "status",
+        "vrf_name": "vrf-name"
+      },
+      "field-transforms": {
+        "protocol": [
+          "lowercase"
+        ],
+        "status": [
+          "lowercase"
+        ]
+      },
+      "ignore-values": {
+        "interface-name": [
+          "Interface"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,115 @@
+{
+  "name": "xr-native-bgp-neighbor",
+  "description": "Cisco IOS-XR native BGP neighbor operational state (default VRF) — Cisco-IOS-XR-ipv4-bgp-oper over gNMI",
+  "version": "1.0.0",
+  "fields": [
+    {
+      "name": "neighbor-address",
+      "field-type": "string",
+      "required": true,
+      "description": "Neighbor IP address (gNMI list key)",
+      "position": 0
+    },
+    {
+      "name": "vrf-name",
+      "field-type": "string",
+      "required": false,
+      "description": "VRF name (default for default VRF)",
+      "position": 1
+    },
+    {
+      "name": "remote-as",
+      "field-type": "int64",
+      "required": true,
+      "description": "Peer AS number",
+      "position": 2
+    },
+    {
+      "name": "local-as",
+      "field-type": "int64",
+      "required": false,
+      "description": "Local AS number",
+      "position": 3
+    },
+    {
+      "name": "connection-state",
+      "field-type": "string",
+      "required": true,
+      "description": "BGP session state (bgp-st-estab, bgp-st-active, bgp-st-idle, ...)",
+      "position": 4
+    },
+    {
+      "name": "connection-admin-status",
+      "field-type": "int32",
+      "required": false,
+      "description": "Admin status (0 = up)",
+      "position": 5
+    },
+    {
+      "name": "connection-established-time",
+      "field-type": "int64",
+      "required": false,
+      "description": "Seconds since session established",
+      "position": 6
+    },
+    {
+      "name": "router-id",
+      "field-type": "string",
+      "required": false,
+      "description": "Peer router-id",
+      "position": 7
+    },
+    {
+      "name": "description",
+      "field-type": "string",
+      "required": false,
+      "description": "Neighbor description",
+      "position": 8
+    },
+    {
+      "name": "messages-sent",
+      "field-type": "int64",
+      "required": false,
+      "description": "Total BGP messages sent",
+      "position": 9
+    },
+    {
+      "name": "messages-received",
+      "field-type": "int64",
+      "required": false,
+      "description": "Total BGP messages received",
+      "position": 10
+    },
+    {
+      "name": "hold-time",
+      "field-type": "int32",
+      "required": false,
+      "description": "Current negotiated hold time (seconds)",
+      "position": 11
+    }
+  ],
+  "mappings": [
+    {
+      "protocol": "gnmi",
+      "netos": "ios-xr",
+      "key-field": "neighbor-address",
+      "gnmi-paths": [
+        "Cisco-IOS-XR-ipv4-bgp-oper:bgp/instances/instance/instance-active/default-vrf/neighbors/neighbor"
+      ],
+      "field-mappings": {
+        "connection-admin-status": "connection-admin-status",
+        "connection-established-time": "connection-established-time",
+        "connection-state": "connection-state",
+        "description": "description",
+        "hold-time": "hold-time",
+        "local-as": "local-as",
+        "messages-received": "messages-received",
+        "messages-sent": "messages-sent",
+        "neighbor-address": "neighbor-address",
+        "remote-as": "remote-as",
+        "router-id": "router-id",
+        "vrf-name": "vrf-name"
+      }
+    }
+  ]
+}

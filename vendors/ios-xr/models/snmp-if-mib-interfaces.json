@@ -1,0 +1,98 @@
+{
+  "name": "snmp-if-mib-interfaces",
+  "description": "Interface status and traffic counters via SNMP IF-MIB (ifTable + ifXTable). Standard MIB — works on any SNMP-capable platform.",
+  "version": "1.0.0",
+  "fields": [
+    {
+      "name": "interface-name",
+      "field-type": "string",
+      "required": true,
+      "description": "Interface name from ifName (key)",
+      "position": 0
+    },
+    {
+      "name": "admin-status",
+      "field-type": "string",
+      "required": false,
+      "description": "Admin status (ifAdminStatus enum decoded to up/down/testing)",
+      "position": 1
+    },
+    {
+      "name": "oper-status",
+      "field-type": "string",
+      "required": false,
+      "description": "Operational status (ifOperStatus enum decoded)",
+      "position": 2
+    },
+    {
+      "name": "mtu",
+      "field-type": "uint32",
+      "required": false,
+      "description": "MTU in bytes (ifMtu)",
+      "position": 3
+    },
+    {
+      "name": "in-octets",
+      "field-type": "uint64",
+      "required": false,
+      "description": "Ingress 64-bit byte counter (ifHCInOctets)",
+      "position": 4
+    },
+    {
+      "name": "out-octets",
+      "field-type": "uint64",
+      "required": false,
+      "description": "Egress 64-bit byte counter (ifHCOutOctets)",
+      "position": 5
+    },
+    {
+      "name": "in-errors",
+      "field-type": "uint64",
+      "required": false,
+      "description": "Ingress error counter (ifInErrors)",
+      "position": 6
+    },
+    {
+      "name": "out-errors",
+      "field-type": "uint64",
+      "required": false,
+      "description": "Egress error counter (ifOutErrors)",
+      "position": 7
+    }
+  ],
+  "mappings": [
+    {
+      "protocol": "snmp",
+      "netos": "ios-xr",
+      "key-field": "ifName",
+      "snmp-walk-oids": [
+        "1.3.6.1.2.1.31.1.1.1.1",
+        "1.3.6.1.2.1.2.2.1.7",
+        "1.3.6.1.2.1.2.2.1.8",
+        "1.3.6.1.2.1.2.2.1.4",
+        "1.3.6.1.2.1.31.1.1.1.6",
+        "1.3.6.1.2.1.31.1.1.1.10",
+        "1.3.6.1.2.1.2.2.1.14",
+        "1.3.6.1.2.1.2.2.1.20"
+      ],
+      "field-mappings": {
+        "ifAdminStatus": "admin-status",
+        "ifHCInOctets": "in-octets",
+        "ifHCOutOctets": "out-octets",
+        "ifInErrors": "in-errors",
+        "ifMtu": "mtu",
+        "ifName": "interface-name",
+        "ifOperStatus": "oper-status",
+        "ifOutErrors": "out-errors"
+      },
+      "field-transforms": {
+        "admin-status": [
+          "if_admin_status"
+        ],
+        "oper-status": [
+          "if_oper_status"
+        ]
+      }
+    }
+  ]
+}

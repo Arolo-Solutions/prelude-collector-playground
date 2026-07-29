@@ -1,0 +1,83 @@
+{
+  "name": "oc-bgp-neighbor",
+  "description": "OpenConfig BGP neighbor session state",
+  "version": "1.0.0",
+  "fields": [
+    {
+      "name": "neighbor-address",
+      "field-type": "string",
+      "format": "ip-address",
+      "required": true,
+      "description": "Neighbor IP address (key)",
+      "position": 0
+    },
+    {
+      "name": "peer-as",
+      "field-type": "integer",
+      "required": false,
+      "description": "Peer AS number",
+      "position": 1
+    },
+    {
+      "name": "session-state",
+      "field-type": "string",
+      "required": false,
+      "description": "BGP session state",
+      "position": 2
+    },
+    {
+      "name": "local-as",
+      "field-type": "integer",
+      "required": false,
+      "description": "Local AS number",
+      "position": 3
+    },
+    {
+      "name": "peer-type",
+      "field-type": "string",
+      "required": false,
+      "description": "Peer type (ibgp/ebgp)",
+      "position": 4
+    },
+    {
+      "name": "description",
+      "field-type": "string",
+      "required": false,
+      "description": "Neighbor description",
+      "position": 5
+    }
+  ],
+  "mappings": [
+    {
+      "protocol": "gnmi",
+      "netos": "ios-xr",
+      "key-field": "neighbor-address",
+      "gnmi-paths": [
+        "openconfig-network-instance:network-instances/network-instance/protocols/protocol/bgp/neighbors/neighbor/state"
+      ],
+      "gnmi-path-filter": "/state",
+      "field-mappings": {
+        "description": "description",
+        "local-as": "local-as",
+        "neighbor-address": "neighbor-address",
+        "peer-as": "peer-as",
+        "peer-type": "peer-type",
+        "session-state": "session-state"
+      },
+      "value-transforms": {
+        "peer-type": {
+          "EXTERNAL": "ebgp",
+          "INTERNAL": "ibgp"
+        },
+        "session-state": {
+          "ACTIVE": "active",
+          "CONNECT": "connect",
+          "ESTABLISHED": "established",
+          "IDLE": "idle",
+          "OPENCONFIRM": "openconfirm",
+          "OPENSENT": "opensent"
+        }
+      }
+    }
+  ]
+}

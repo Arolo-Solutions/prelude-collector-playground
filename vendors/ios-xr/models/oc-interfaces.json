@@ -1,0 +1,174 @@
+{
+  "name": "oc-interfaces",
+  "description": "OpenConfig interface state — counters, admin/oper status, MTU, speed",
+  "version": "1.0.0",
+  "fields": [
+    {
+      "name": "name",
+      "field-type": "string",
+      "required": true,
+      "description": "Interface name (key)",
+      "position": 0
+    },
+    {
+      "name": "admin-status",
+      "field-type": "string",
+      "required": false,
+      "description": "Admin status (up/down)",
+      "position": 1
+    },
+    {
+      "name": "oper-status",
+      "field-type": "string",
+      "required": false,
+      "description": "Oper status (up/down)",
+      "position": 2
+    },
+    {
+      "name": "description",
+      "field-type": "string",
+      "required": false,
+      "description": "Interface description",
+      "position": 3
+    },
+    {
+      "name": "mtu",
+      "field-type": "integer",
+      "required": false,
+      "description": "MTU in bytes",
+      "position": 4
+    },
+    {
+      "name": "speed",
+      "field-type": "integer",
+      "required": false,
+      "description": "Interface speed in bps",
+      "position": 5
+    },
+    {
+      "name": "type",
+      "field-type": "string",
+      "required": false,
+      "description": "Interface type",
+      "position": 6
+    },
+    {
+      "name": "in-octets",
+      "field-type": "integer",
+      "required": false,
+      "description": "Ingress octets",
+      "position": 7
+    },
+    {
+      "name": "out-octets",
+      "field-type": "integer",
+      "required": false,
+      "description": "Egress octets",
+      "position": 8
+    },
+    {
+      "name": "in-packets",
+      "field-type": "integer",
+      "required": false,
+      "description": "Ingress packets",
+      "position": 9
+    },
+    {
+      "name": "out-packets",
+      "field-type": "integer",
+      "required": false,
+      "description": "Egress packets",
+      "position": 10
+    },
+    {
+      "name": "in-errors",
+      "field-type": "integer",
+      "required": false,
+      "description": "Ingress error packets",
+      "position": 11
+    },
+    {
+      "name": "out-errors",
+      "field-type": "integer",
+      "required": false,
+      "description": "Egress error packets",
+      "position": 12
+    }
+  ],
+  "mappings": [
+    {
+      "protocol": "gnmi",
+      "netos": "ios-xr",
+      "key-field": "name",
+      "gnmi-paths": [
+        "openconfig-interfaces:interfaces/interface/state"
+      ],
+      "gnmi-path-filter": "/state",
+      "field-mappings": {
+        "admin-status": "admin-status",
+        "description": "description",
+        "in-errors": "counters.in-errors",
+        "in-octets": "counters.in-octets",
+        "in-packets": "counters.in-unicast-pkts",
+        "mtu": "mtu",
+        "name": "name",
+        "oper-status": "oper-status",
+        "out-errors": "counters.out-errors",
+        "out-octets": "counters.out-octets",
+        "out-packets": "counters.out-unicast-pkts",
+        "type": "type"
+      },
+      "value-transforms": {
+        "admin-status": {
+          "DOWN": "down",
+          "UP": "up"
+        },
+        "oper-status": {
+          "DORMANT": "dormant",
+          "DOWN": "down",
+          "LOWER_LAYER_DOWN": "lower-layer-down",
+          "NOT_PRESENT": "not-present",
+          "TESTING": "testing",
+          "UNKNOWN": "unknown",
+          "UP": "up"
+        }
+      },
+      "ignore-values": {
+        "name": [
+          "Null0"
+        ]
+      }
+    },
+    {
+      "protocol": "netconf",
+      "netos": "ios-xr",
+      "key-field": "name",
+      "netconf-filter-paths": [
+        "<interfaces xmlns='http://openconfig.net/yang/interfaces'/>"
+      ],
+      "field-mappings": {
+        "admin-status": "admin-status",
+        "description": "description",
+        "mtu": "mtu",
+        "name": "name",
+        "oper-status": "oper-status",
+        "type": "type"
+      },
+      "value-transforms": {
+        "admin-status": {
+          "DOWN": "down",
+          "UP": "up"
+        },
+        "oper-status": {
+          "DOWN": "down",
+          "UP": "up"
+        }
+      },
+      "ignore-values": {
+        "name": [
+          "Null0"
+        ]
+      }
+    }
+  ]
+}

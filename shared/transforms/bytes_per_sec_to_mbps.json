@@ -1,0 +1,5 @@
+{
+  "name": "bytes_per_sec_to_mbps",
+  "description": "Convert byte/sec counter to Mbps with 2-decimal precision.",
+  "code": "return round(to_mbps(value * 8), 1)"
+}
