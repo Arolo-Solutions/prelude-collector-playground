@@ -193,10 +193,11 @@ When calling `collector_mappings` with action `add` and protocol `cli`, the `cli
 **How TTP Results Map to Fields:**
 
 1. TTP parses CLI output into structured records (list of maps)
-2. The key source is resolved: the TTP variable that `field-mappings` maps onto the model's `is_key` field
-3. `FlattenTTPResults` extracts all leaf-level maps containing that key source
-4. Records are merged by key value (deduplication)
+2. The key source(s) are resolved: the TTP variable(s) that `field-mappings` maps onto the model's
+   `is_key` field(s) — one for a plain key, several for a composite key
+3. `FlattenTTPResults` extracts all leaf-level maps containing every one of those key sources
+4. Records are merged by the combined key value (deduplication)
 5. `field-mappings` maps TTP variable names to model field names: `{"ttp_var": "model-field"}`
 
-So the template **must capture the key source as a variable** — if the TTP variable feeding the key
-field never appears in the template, every record is dropped.
+So the template **must capture every key source as a variable** — if the TTP variable feeding a
+key field never appears in the template, every record is dropped.

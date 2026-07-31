@@ -112,19 +112,20 @@ Standard sequence for setting up network telemetry collection:
 2. **Add protocol** — `collector_protocols` (action: create) with type, port, credentials
 3. **Discover paths** — `collector_yang_browser` or `collector_snmp_browser` or `collector_test_cli`
 4. **Create model** — `collector_models` (action: create) with name, description
-5. **Add fields** — `collector_fields` (action: add) — needs at least 1 field, exactly one flagged `is_key`
-6. **Add mapping** — `collector_mappings` (action: add) — needs paths/OIDs + a `field_mappings` entry targeting the key field
+5. **Add fields** — `collector_fields` (action: add) — needs at least 1 field, at least one flagged `is_key` (a second or third adds a composite-key part instead of replacing it)
+6. **Add mapping** — `collector_mappings` (action: add) — needs paths/OIDs + a `field_mappings` entry targeting each key field
 7. **Test** — `collector_test_model` with device_id and mapping_id
 8. **Subscribe** — `collector_subscriptions` (action: create) — starts live collection
 9. **Verify** — `collector_snapshots` (action: get), `collector_outputs` (action: metrics), or `collector_health` (action: subscription) to check collection health
 
-A model is "collection-ready" when it has: at least 1 field with `is_key` set + at least 1 mapping whose `field_mappings` maps exactly one source onto that key field, plus protocol paths.
+A model is "collection-ready" when it has: at least 1 field with `is_key` set + at least 1 mapping whose `field_mappings` maps exactly one source onto each key field, plus protocol paths.
 
 **The key is derived, not declared** (collector 1.1.3+). `collector_mappings` has no `key_field`
-parameter: the collector reads the record key from the source mapped onto the model's `is_key`
-field. A mapping that leaves the key field unmapped — or maps two sources onto it — is rejected.
-Empty `records` from `collector_test_model` usually means the key source name doesn't match what
-the device returns.
+parameter: the collector reads the record key from the source(s) mapped onto the model's `is_key`
+field(s). One key field is the common case; two or more form a composite key (soft cap 4), joined
+into one string sorted by field name. A mapping that leaves any key field unmapped — or maps two
+sources onto the same key field — is rejected. Empty `records` from `collector_test_model` usually
+means a key source name doesn't match what the device returns.
 
 ### Model IDs: family vs version
 
@@ -147,17 +148,27 @@ Discover it from real device data before building the model:
 
 1. **Run `collector_test_path`** (or `collector_test_cli`) — see the raw field names the device
    actually returns.
-2. **Flag the model field** that holds that identity with `is_key` via `collector_fields`.
-3. **Map the raw source onto it** in the mapping's `field_mappings` — that entry is the key
-   source. Exactly one, or the save is rejected.
+2. **Flag the model field(s)** that hold that identity with `is_key` via `collector_fields`. Most
+   models need only one; flag a second when no single value is unique on its own (e.g. a BGP
+   neighbor identified by address *and* VRF).
+3. **Map the raw source onto each one** in the mapping's `field_mappings` — those entries are the
+   key sources. Exactly one per key field, or the save is rejected.
 
-| Model | Key field | Typical source |
-|-------|-----------|----------------|
+| Model | Key field(s) | Typical source |
+|-------|--------------|----------------|
 | Interfaces | `name` | `/interfaces/interface/state` → `name` |
 | BGP neighbors | `neighbor-address` | `/bgp/neighbors/neighbor/state` → `neighbor-address` |
+| BGP neighbors (multi-VRF) | `neighbor-address`, `vrf-name` | address from `/state`; VRF from the `network-instance[name=…]` path predicate — path-qualified source `/network-instance.name` |
 | ISIS adjacencies | `system-id` | `/isis/…/adjacencies/adjacency/state` → `system-id` |
+| Subinterfaces | `name`, `index` | both often exist only as path predicates: `interface[name=…]/subinterfaces/subinterface[index=…]` |
 | Routes | `prefix` | varies by protocol |
 | System info | `hostname` | `/system/state` → `hostname` |
+
+!!! tip "Nested lists that reuse a predicate name"
+    A path like `network-instance[name=VRF]/protocols/protocol[name=core]` has **two** `name`
+    predicates at different levels. The collector resolves each qualified as
+    `<listElement>.<predicateName>` (`network-instance.name` vs `protocol.name`), so the outer
+    list's predicate can be a key part even though a deeper list reuses the same leaf name.
 
 The value normally comes from the **data payload**, and the parser matches the source name
 directly. When a gNMI list key appears only in the path predicate (`[name=eth0]`) and never as
