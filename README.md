@@ -88,7 +88,7 @@ to drive the collector. Copy either directory into `~/.claude/skills/`.
 
 These directories are **vendored copies**; their source of truth lives elsewhere and they are
 refreshed with [`scripts/sync-skills.sh`](scripts/sync-skills.sh). Send skill fixes upstream rather
-than editing the copy here — see [RELEASING.md](RELEASING.md).
+than editing the copy here.
 
 ## Docs
 
