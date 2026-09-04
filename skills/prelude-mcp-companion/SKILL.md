@@ -48,9 +48,9 @@ Env overrides: `PRELUDE_COLLECTOR_URL`, `PRELUDE_COLLECTOR_ENABLED`, etc.
 
 ---
 
-## Available MCP Tools (36 total)
+## Available MCP Tools (37 total)
 
-### Collector (19 tools)
+### Collector (20 tools)
 | Tool | Purpose |
 |------|---------|
 | `collector_ping` | Health check |
@@ -58,7 +58,8 @@ Env overrides: `PRELUDE_COLLECTOR_URL`, `PRELUDE_COLLECTOR_ENABLED`, etc.
 | `collector_models` | CRUD data models (list, get, create, update, delete, export, import) |
 | `collector_fields` | Manage model fields (add, update, delete, reorder) |
 | `collector_mappings` | Protocol mappings (add, update, delete) — gNMI, SNMP, NETCONF, CLI |
-| `collector_protocols` | Device protocols (list, get, create, update, delete) |
+| `collector_protocols` | Device protocols — port and connection settings, no credentials (list, get, create, update, delete) |
+| `collector_credential_sets` | The secrets a device authenticates with, shared by all of its protocols (list, get, create, update, delete) |
 | `collector_subscriptions` | Collection subscriptions (list, get, create, update, delete) |
 | `collector_transforms` | Starlark transforms (list, get, create, update, delete, ai-generate) |
 | `collector_outputs` | Output backends (list, get, configure, delete, metrics, test, detect) |
@@ -104,19 +105,24 @@ Env overrides: `PRELUDE_COLLECTOR_URL`, `PRELUDE_COLLECTOR_ENABLED`, etc.
 
 ---
 
-## Core Workflow: Device → Model → Test → Collect
+## Core Workflow: Credentials → Device → Model → Test → Collect
 
 Standard sequence for setting up network telemetry collection:
 
-1. **List/create device** — `collector_devices` (action: list/create)
-2. **Add protocol** — `collector_protocols` (action: create) with type, port, credentials
-3. **Discover paths** — `collector_yang_browser` or `collector_snmp_browser` or `collector_test_cli`
-4. **Create model** — `collector_models` (action: create) with name, description
-5. **Add fields** — `collector_fields` (action: add) — needs at least 1 field, at least one flagged `is_key` (a second or third adds a composite-key part instead of replacing it)
-6. **Add mapping** — `collector_mappings` (action: add) — needs paths/OIDs + a `field_mappings` entry targeting each key field
-7. **Test** — `collector_test_model` with device_id and mapping_id
-8. **Subscribe** — `collector_subscriptions` (action: create) — starts live collection
-9. **Verify** — `collector_snapshots` (action: get), `collector_outputs` (action: metrics), or `collector_health` (action: subscription) to check collection health
+1. **Create a credential set** — `collector_credential_sets` (action: create) with a name and the
+   account the devices answer to. Secrets live only here; a protocol carries none. Reuse an existing
+   set (action: list) when the devices share an account
+2. **List/create device** — `collector_devices` (action: list/create), passing `credential_set_id`.
+   Without a set, a device carrying collection protocols is created **inactive** — it has nothing to
+   authenticate with — so attach the set, then `update` it with `active: true`
+3. **Add protocol** — `collector_protocols` (action: create) with type and port
+4. **Discover paths** — `collector_yang_browser` or `collector_snmp_browser` or `collector_test_cli`
+5. **Create model** — `collector_models` (action: create) with name, description
+6. **Add fields** — `collector_fields` (action: add) — needs at least 1 field, at least one flagged `is_key` (a second or third adds a composite-key part instead of replacing it)
+7. **Add mapping** — `collector_mappings` (action: add) — needs paths/OIDs + a `field_mappings` entry targeting each key field
+8. **Test** — `collector_test_model` with device_id and mapping_id
+9. **Subscribe** — `collector_subscriptions` (action: create) — starts live collection
+10. **Verify** — `collector_snapshots` (action: get), `collector_outputs` (action: metrics), or `collector_health` (action: subscription) to check collection health
 
 A model is "collection-ready" when it has: at least 1 field with `is_key` set + at least 1 mapping whose `field_mappings` maps exactly one source onto each key field, plus protocol paths.
 
