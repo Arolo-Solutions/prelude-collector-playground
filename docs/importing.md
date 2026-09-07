@@ -37,6 +37,9 @@ collector_test_cli                                   # confirm CLI command outpu
 ## 2. Web UI
 
 1. **Models → Import**, upload a `vendors/<netos>/models/*.json` or `shared/models/*.json` file. The model, its fields, and all mappings are created.
+
+   ![Imported models in the Data Model Builder, showing families, coverage and subscriptions](images/model-list.png)
+
 2. **Transforms → New**, paste the `name` / `description` / `code` from a `shared/transforms/*.json` file.
 3. Open the imported model's mapping editor and use **Step 2 · Test & Generate** to run a live test
    against a device — this is the place to confirm the CLI/TTP example parses your device's output.

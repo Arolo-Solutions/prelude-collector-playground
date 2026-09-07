@@ -27,18 +27,12 @@ that are vendor-independent.
 
 ## Quick start
 
-```bash
-# via the Prelude MCP
-collector_models action=import import_data=<contents of vendors/ios-xr/models/oc-interfaces.json>
+In the Web UI, **Models → Import** takes any model file from this repo — pick the `.json`, and the
+collector loads its fields and per-vendor mappings.
 
-# via REST (token from `make token`)
-curl -ks -X POST -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  --data-binary @vendors/ios-xr/models/oc-interfaces.json \
-  https://127.0.0.1:4030/api/v1/models/0/import
-```
+![Importing a data model in the Prelude Collector Web UI](docs/images/model-import.png)
 
-Or in the Web UI: **Models → Import**. Full details (incl. transforms and vendor profiles) in
-[docs/importing.md](docs/importing.md).
+Full details (incl. transforms and vendor profiles) in [docs/importing.md](docs/importing.md).
 
 ## Vendors
 
