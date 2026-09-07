@@ -1,20 +1,29 @@
 #!/usr/bin/env bash
-# Publish this repo to its public GitHub mirror.
+# Publish this repo to its public GitHub repo.
 #
-# Authoring happens on GitLab (origin). GitHub is the only surface a customer
-# can read — including the Playground link the collector renders on every
-# vendor-profile row — so publishing is a deliberate act with gates, not a
-# background sync. Every gate here exists because skipping it has a cost:
-# content that is wrong, stale, or internal becomes public the moment it lands.
+# Authoring happens on GitLab (origin), with whatever commit history and messages
+# the private work produced. GitHub carries its own curated history: each publish
+# is ONE snapshot commit of the current tree, with a message you pass on the
+# command line and authored by you alone. GitHub does not mirror GitLab's SHAs,
+# messages, or co-authors — the private log never crosses over.
+#
+# GitHub is the only surface a customer can read — including the Playground link
+# the collector renders on every vendor-profile row — so publishing is a
+# deliberate act with gates, not a background sync. Every gate here exists because
+# skipping it has a cost: content that is wrong, stale, or internal becomes public
+# the moment it lands.
 #
 # Usage:
-#   ./scripts/publish.sh --check-only        run the gates, touch nothing
-#   ./scripts/publish.sh --dry-run v1.1.2    full rehearsal, no writes
-#   ./scripts/publish.sh v1.1.2              tag, push both remotes, cut a Release
-#   ./scripts/publish.sh                     push main to both remotes, no tag
+#   ./scripts/publish.sh --check-only              run the gates, touch nothing
+#   ./scripts/publish.sh -m "message"              publish a snapshot, no tag
+#   ./scripts/publish.sh -m "message" v1.1.2       publish, tag, cut a Release
+#   ./scripts/publish.sh --dry-run -m "msg" v1.1.2 full rehearsal, no writes
 #
 # Options:
-#   --check-only   run every gate, then stop; nothing is tagged, pushed or released
+#   -m, --message  the commit message for the GitHub snapshot commit. Required
+#                  when the content has changed since the last publish. Defaults
+#                  to the version (e.g. "v1.1.2") for a tagged publish.
+#   --check-only   run every gate, then stop; nothing is committed, pushed or released
 #   --dry-run      run everything and print the actions instead of doing them
 #   --yes          skip the confirmation prompt
 #   --no-release   tag and push, but do not create the GitHub Release
@@ -47,6 +56,7 @@ cd "$repo_root"
 # ---------------------------------------------------------------- arguments
 
 version=""
+message=""
 dry_run=false
 check_only=false
 assume_yes=false
@@ -54,6 +64,8 @@ want_release=true
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
+        -m|--message)  shift; message="${1:-}" ;;
+        --message=*)   message="${1#--message=}" ;;
         --dry-run)     dry_run=true ;;
         --check-only)  check_only=true ;;
         --yes|-y)      assume_yes=true ;;
@@ -228,20 +240,42 @@ else
     warn "no origin/$PUBLISH_BRANCH to compare against"
 fi
 
-# The GitHub push must fast-forward, or history a customer already fetched moves.
+# GitHub carries its own history, so what matters is not the SHA but the tree:
+# does the content differ from what is already published? The snapshot commit
+# the publish step builds parents on the current GitHub head, so it always
+# fast-forwards GitHub's own line — no public history is ever rewritten.
+head_tree="$(git rev-parse "HEAD^{tree}")"
+content_changed=true
 if gh_ref="$(git rev-parse --verify --quiet "refs/remotes/$GITHUB_REMOTE/$PUBLISH_BRANCH")"; then
-    if [[ "$gh_ref" == "$head" ]]; then
-        ok "$GITHUB_REMOTE/$PUBLISH_BRANCH already at HEAD — nothing new to publish"
-    elif git merge-base --is-ancestor "$gh_ref" "$head"; then
-        ok "fast-forward: $(git rev-list --count "$gh_ref..$head") commit(s) to publish"
-        git --no-pager log --oneline --no-decorate "$gh_ref..$head" | sed 's/^/      /'
+    gh_tree="$(git rev-parse "$gh_ref^{tree}")"
+    if [[ "$gh_tree" == "$head_tree" ]]; then
+        content_changed=false
+        ok "$GITHUB_REMOTE/$PUBLISH_BRANCH already has this exact tree — no content change"
+        note "a publish would still add a commit (message/tag only); usually you want a change first"
     else
-        bad "$GITHUB_REMOTE/$PUBLISH_BRANCH is not an ancestor of HEAD — pushing would rewrite public history"
-        note "GitHub has $(git rev-list --count "$head..$gh_ref") commit(s) HEAD lacks; merge them down first"
-        git --no-pager log --oneline --no-decorate "$head..$gh_ref" | sed 's/^/      /'
+        ok "content differs from the published tree — a new snapshot will be published"
+        note "$(git diff --stat "$gh_ref" HEAD -- . | tail -1 | sed 's/^ *//')"
     fi
 else
     warn "no $GITHUB_REMOTE/$PUBLISH_BRANCH yet — this would be the first publish"
+fi
+
+# A snapshot that changes content needs a message. Default to the version when
+# tagging; otherwise require -m so no publish lands with an empty description.
+if [[ "$content_changed" == true && -z "$message" ]]; then
+    if [[ -n "$version" ]]; then
+        message="$version"
+        note "no -m given; GitHub commit message defaults to '$version'"
+    else
+        bad "content changed but no commit message — pass -m \"...\""
+    fi
+fi
+
+# A tag names a release; reusing one silently moves a version customers already
+# pinned. The github fetch above brought remote tags into refs/tags/, so a local
+# hit means either remote already carries it.
+if [[ -n "$version" ]] && git rev-parse --verify --quiet "refs/tags/$version" >/dev/null; then
+    bad "tag $version already exists (locally or on a fetched remote) — pick a new version"
 fi
 
 # ----------------------------------------------------------- content gates
@@ -357,9 +391,10 @@ fi
 
 echo
 echo "About to publish to the PUBLIC repo $GITHUB_REPO:"
-echo "  branch  $PUBLISH_BRANCH -> $(git rev-parse --short HEAD)"
-[[ -n "$version" ]] && echo "  tag     $version"
-[[ -n "$version" && "$want_release" == true ]] && echo "  release $version + 2 .skill bundles"
+echo "  snapshot  $PUBLISH_BRANCH tree $(git rev-parse --short "HEAD^{tree}") as one commit, authored by $(git config user.name)"
+echo "  message   $(printf '%s' "$message" | head -1)"
+[[ -n "$version" ]] && echo "  tag       $version (on the GitHub snapshot)"
+[[ -n "$version" && "$want_release" == true ]] && echo "  release   $version + 2 .skill bundles"
 [[ "$dry_run" == true ]] && echo "  (dry run — no writes)"
 
 if [[ "$assume_yes" != true && "$dry_run" != true ]]; then
@@ -376,33 +411,55 @@ run() {
     fi
 }
 
-# -------------------------------------------------------------------- tag
+gh_push() {
+    if [[ -n "${GITHUB_TOKEN:-}" ]]; then
+        git -c credential.helper="$TOKEN_HELPER" push "$@"
+    else
+        git push "$@"
+    fi
+}
+
+# ------------------------------------------------------------------- publish
 
 head2 "Publishing"
 
-if [[ -n "$version" ]]; then
-    if git rev-parse --verify --quiet "refs/tags/$version" >/dev/null; then
-        tagged="$(git rev-list -n1 "$version")"
-        if [[ "$tagged" == "$head" ]]; then
-            ok "tag $version already on HEAD"
-        else
-            abort "tag $version exists but points at ${tagged:0:7}, not HEAD"
-        fi
-    else
-        run git tag -a "$version" -m "$version — verified against Prelude Collector $version"
-    fi
-fi
+# GitLab keeps the real authoring history exactly as it is — push HEAD as-is.
+# No public tag goes here: the tag names the GitHub snapshot, whose SHA GitLab
+# does not have.
+run git push origin "$PUBLISH_BRANCH"
 
-# ------------------------------------------------------------------- push
-
-# GitLab first: it is the source of truth, and a failure there should stop the
-# public push rather than leave the two remotes disagreeing.
-run git push origin "$PUBLISH_BRANCH" --follow-tags
-if [[ -n "${GITHUB_TOKEN:-}" ]]; then
-    run git -c credential.helper="$TOKEN_HELPER" push "$GITHUB_REMOTE" "$PUBLISH_BRANCH" --follow-tags
+# The GitHub snapshot: one commit of the current tree, with your message and your
+# authorship, parented on the current GitHub head. Parenting on that head means
+# the push fast-forwards GitHub's own line — published history is never rewritten
+# — while sharing nothing with GitLab's SHAs, messages, or co-authors.
+gh_parent="$(git rev-parse --verify --quiet "refs/remotes/$GITHUB_REMOTE/$PUBLISH_BRANCH" || true)"
+if [[ "$dry_run" == true ]]; then
+    printf '  %swould run:%s git commit-tree %s %s -m <message>\n' "$C_DIM" "$C_OFF" \
+        "$(git rev-parse --short "$head_tree")" "${gh_parent:+-p ${gh_parent:0:9}}"
+    snapshot="<new-commit>"
 else
-    run git push "$GITHUB_REMOTE" "$PUBLISH_BRANCH" --follow-tags
+    snapshot="$(git commit-tree "$head_tree" ${gh_parent:+-p "$gh_parent"} -m "$message")"
+    ok "built snapshot commit ${snapshot:0:9} (author: $(git config user.name))"
 fi
+
+# Push the snapshot (and, if tagging, its tag) to GitHub. The branch refspec is
+# always present, so the array is never empty (bash 3.2 errors on an empty
+# expansion under `set -u`).
+push_refspecs=("$snapshot:refs/heads/$PUBLISH_BRANCH")
+
+# Tag the snapshot. GitHub-only — the guard above already refused a version that
+# any fetched remote already carries, so this never clobbers a released tag.
+if [[ -n "$version" ]]; then
+    if [[ "$dry_run" != true ]]; then
+        git tag -a "$version" "$snapshot" -m "$message" >/dev/null
+    fi
+    push_refspecs+=("refs/tags/$version")
+    ok "tagged $version -> ${snapshot:0:9}"
+fi
+
+# Non-force: if GitHub moved since the fetch, the push is rejected rather than
+# overwriting someone else's publish.
+run gh_push "$GITHUB_REMOTE" "${push_refspecs[@]}"
 
 # ---------------------------------------------------------------- release
 
@@ -418,21 +475,13 @@ if [[ -n "$version" && "$want_release" == true ]]; then
         ok "built $name.skill ($(du -h "$bundle_dir/$name.skill" | cut -f1 | tr -d ' '))"
     done
 
-    prev_tag="$(git describe --tags --abbrev=0 "$version^" 2>/dev/null || true)"
-    if [[ -n "$prev_tag" ]]; then
-        changes="$(git --no-pager log --format='- %s' --no-merges "$prev_tag..$version")"
-        range_note="Changes since $prev_tag:"
-    else
-        changes="- First published release."
-        range_note="Changes:"
-    fi
-
+    # Release notes come from the curated publish message, never GitLab's private
+    # log — the whole point of the snapshot model is that the private history
+    # does not surface here.
     notes="$(cat <<NOTES
 Verified against **Prelude Collector ${readme_version:-$version}**.
 
-$range_note
-
-$changes
+$message
 
 ## Agent skills
 
@@ -463,7 +512,7 @@ head2 "Done"
 if [[ "$dry_run" == true ]]; then
     echo "  Dry run — nothing was written."
 else
-    echo "  https://github.com/$GITHUB_REPO"
+    echo "  https://github.com/$GITHUB_REPO/commits/$PUBLISH_BRANCH"
     echo
     echo "  Still by hand: refresh the customer-portal pointer to this repo."
 fi
