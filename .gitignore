@@ -1,4 +1,4 @@
 .DS_Store
 
-# Internal release runbook — must never reach the public GitHub repo.
-RELEASING.md
+# Internal tooling and the release runbook — local only, never published.
+scripts/
