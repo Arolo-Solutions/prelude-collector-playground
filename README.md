@@ -18,7 +18,6 @@ shared/models/       Models that span several vendors
 shared/transforms/   User-defined Starlark transforms ({name, description, code})
 skills/              Claude agent skills — teach an agent the collector's API and conventions
 docs/                Reference: model schema, transform catalog, vendor profiles, import paths
-scripts/             Maintenance helpers (skill vendoring)
 ```
 
 Content is organized **by NetOS** because that is the question you actually have — "what do I need
@@ -80,9 +79,8 @@ to drive the collector. Copy either directory into `~/.claude/skills/`.
 | [`prelude-collector-api`](skills/prelude-collector-api) | The **REST API**: models, fields, mappings, live testing, snapshots, subscriptions, output backends, GoTTP templates, transforms, vendor profiles, Grafana pipelines, YANG/SNMP browsers. |
 | [`prelude-mcp-companion`](skills/prelude-mcp-companion) | The **Prelude MCP** server: the workflow (device → model → mapping → test → subscribe), JSON conventions, built-in transforms, GoTTP syntax, and the multivendor-consistency rule — compare across vendors before you subscribe. |
 
-These directories are **vendored copies**; their source of truth lives elsewhere and they are
-refreshed with [`scripts/sync-skills.sh`](scripts/sync-skills.sh). Send skill fixes upstream rather
-than editing the copy here.
+These directories are **vendored copies**; their source of truth lives elsewhere. Send skill fixes
+upstream rather than editing the copy here.
 
 ## Docs
 
